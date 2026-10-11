@@ -44,7 +44,10 @@
 
 		
 		<h2>Overview</h2>
-		Give a high-level overview of what you implemented in this homework. Think about what you've built as a whole. Share your thoughts on what interesting things you've learned from completing the homework.
+		This assignment focused on how objects are modeled in 3D. starting with using bezier curves for curves and surfaces to handling full triangle meshes. 
+		Overall, I found the proceess to be very interesting, seeing all of the ways different linear algebra and other optimizations are used to make this computation
+		as efficient as possible both in terms of time and memory capacity. The simplification of surfaces using bezier curves, Phong shading, and how edges are 
+		handled as data structures show an immense amount of thought to make these systems efficient.
 
 		<h2>Section I: Bezier Curves and Surfaces</h2>
 
@@ -151,8 +154,6 @@
 		</div>		
 		
 		<h3>Part 4: Edge flip</h3>
-		TODO: Briefly explain how you implemented the edge flip operation and describe any interesting implementation / debugging tricks you have used. 
-
 		The implementation for this part is contained within the <code>EdgeIter HalfedgeMesh::flipEdge( EdgeIter e0 )</code> function. First, we check to see if
 		any of the edges are boundary edges, as these can not be flipped. Next, all of the vertices, half edges, their outer twin half edges, and faces are identified.
 		With these now identified, we use the <code>setNeighbors(...)</code> function to re-assign the pointers in order to flip the edge. All other pointers are 
