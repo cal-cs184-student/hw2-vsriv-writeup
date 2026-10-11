@@ -49,7 +49,17 @@
 		<h2>Section I: Bezier Curves and Surfaces</h2>
 
 		<h3>Part 1: Bezier curves with 1D de Casteljau subdivision</h3>
-		TODO: Briefly explain de Casteljau’s algorithm and how you implemented it in order to evaluate Bezier curves.
+
+		Starting with a set of control points (shown in white), de Casteljau's algorithm calculates a new level of intermediate control points (shown in blue). These are calculated using the parameter t based on the equation:
+		\[ p_{i}^{'} = t * p_i + (1-t) * p_{i+1} \]
+		where \( p_{i}^{'} \) is the intermediate control point on the next step/level. This is evaluated recursively until a single point is found (shown in red). 
+		When calculated across various values of t between 0 and 1, we get the Bezier curve	(shown in green).
+
+		<br><br>
+
+		In code, this is achieved through the <code>BezierCurve::evaluateStep(std::vector<Vector2D> const& points)</code> function, which returns a 
+		<code>std::vector<Vector2D></code> that contains the next set of control points. The function iterates over the input points vector and calculates
+		a new set of control points using interpolation to derive this next level of control points. It is called recursively to evaluate the curve
 
 		<br><br>
 		<div style="display: flex; flex-direction: column; align-items: center;">
@@ -57,85 +67,123 @@
 			  <tr>
 				<td style="text-align: center;">
 				  <img src="assets/bezier_step1.png" width="100%" style="border: 2px solid black;"/>
-				  <figcaption>TODO</figcaption>
+				  <figcaption>Step 1</figcaption>
 				</td>
 				<td style="text-align: center;">
 				  <img src="assets/bezier_step2.png" width="100%" style="border: 2px solid black;"/>
-				  <figcaption>TODO</figcaption>
+				  <figcaption>Step 2</figcaption>
 				</td>
 			  </tr>
 			  <tr>
 				<td style="text-align: center;">
 				  <img src="assets/bezier_step3.png" width="100%" style="border: 2px solid black;"/>
-				  <figcaption>TODO</figcaption>
+				  <figcaption>Step 3</figcaption>
 				</td>
 				<td style="text-align: center;">
 				  <img src="assets/bezier_step4.png" width="100%" style="border: 2px solid black;"/>
-				  <figcaption>TODO</figcaption>
+				  <figcaption>Step 4</figcaption>
 				</td>
 			  </tr>
 			  <tr>
 				<td style="text-align: center;">
 				  <img src="assets/bezier_final.png" width="100%" style="border: 2px solid black;"/>
-				  <figcaption>TODO</figcaption>
+				  <figcaption>Step 5 (Final)</figcaption>
 				</td>
 				<td style="text-align: center;">
 				  <img src="assets/bezier_mod.png" width="100%" style="border: 2px solid black;"/>
-				  <figcaption>TODO</figcaption>
+				  <figcaption>Step 5 (Final) at different t-value</figcaption>
 				</td>
 			  </tr>
 			</table>
 		</div>
 
 		<h3>Part 2: Bezier surfaces with separable 1D de Casteljau</h3>
-		TODO: Briefly explain how de Casteljau algorithm extends to Bezier surfaces and how you implemented it in order to evaluate Bezier surfaces.
+		To draw surfaces using de Casteljau's algorithm, two parameters are used, \( u \) and \( v \), along with a grid of control points. Starting with u,
+		de Casteljau's algorithm is used to reach 1 point for each row in the grid of control points, giving us a column vector of control points. Now with v,
+		de Casteljau's algorithm is used again until we reach 1 point. By varying \( u \) and \( v \) across \( [0, 1] \times [0, 1] \), we can evaluate a
+		full 
 
+		<br><br>
+
+		In code, this is achieved using 3 functions: 
+		<ul>
+		<li>
+			<code>BezierPatch::evaluateStep(std::vector<Vector3D> const &points, double t)</code>: Similar to the 2D function from Part 1, this function returns the next level
+			of intermediate points, by iterating across all input control points and calculating the interpolated control points of the next level using the input t.
+		</li>
+		<li>
+			<code>BezierPatch::evaluate1D(std::vector<Vector3D> const &points, double t)</code>: This function calls evaluateStep(...) until a singular point is reached, and this
+				final point is the return value
+		</li>
+		<li>
+			<code>BezierPatch::evaluate(double u, double v)</code>: This function takes in a matrix of control points from the class variable <code>controlPoints</code>,
+			and for each row calls evaluate <code>evaluate1D(row, u)</code>, getting the column vector of control points as mentioned above. With this column vector, 
+			<code>evaluate1D(column, v)</code> is used to determine the final point based on the pair of \( u \) and \( v \) values. 
+		</li>
+		</ul> 
+		
 		<figure>
 			<img src="assets/bezier_teapot.png" alt="Surface Bezier" style="width:65%; border: 2px solid black;"\>
-			<figcaption>TODO</figcaption>
+			<figcaption>Teapot Bezier Surface</figcaption>
 		</figure>
 
 		<h2>Section II: Triangle Meshes and Half-Edge Data Structure</h2>
 
 		<h3>Part 3: Area-weighted vertex normals</h3>
-		TODO: Briefly explain how you implemented the area-weighted vertex normals.
+		In the function <code>Vertex::normal()</code>, we intialize an accumulation vector \( n = (0,0,0) \) and the first half edge. Using a <code>do {...} while {...}</code>
+		loop structure, we iterate across neigboring faces and their vertices. To calculate their normal, we compute the cross product using <code>n += cross(p1 - p0, p2 - p0)</code>, 
+		where p0 is the current point, p1 is the next edge's vertex, and p2 is the next next edge's vertex. This traversal continues using <code>h->twin()->next()s</code>
+		until a loop is completed, at which the accumulation vector is normalized and returned. 
 
 		<div style="display: flex; flex-direction: column; align-items: center;">
 			<table style="width: 100%; text-align: center; border-collapse: collapse;">
 			  <tr>
 				<td style="text-align: center;">
 				  <img src="assets/teapot_default_shading.png" width="100%" style="border: 2px solid black;"/>
-				  <figcaption>TODO</figcaption>
+				  <figcaption>Flat Shading</figcaption>
 				</td>
 				<td style="text-align: center;">
 				  <img src="assets/teapot_phong_shading.png" width="100%" style="border: 2px solid black;"/>
-				  <figcaption>TODO</figcaption>
+				  <figcaption>Phong Shading</figcaption>
 				</td>
 			  </tr>
 			</table>
 		</div>		
 		
 		<h3>Part 4: Edge flip</h3>
-		TODO: Briefly explain how you implemented the edge flip operation and describe any interesting implementation / debugging tricks you have used. Write about your eventful debugging journey, if you have experienced one.
+		TODO: Briefly explain how you implemented the edge flip operation and describe any interesting implementation / debugging tricks you have used. 
 
+		The implementation for this part is contained within the <code>EdgeIter HalfedgeMesh::flipEdge( EdgeIter e0 )</code> function. First, we check to see if
+		any of the edges are boundary edges, as these can not be flipped. Next, all of the vertices, half edges, their outer twin half edges, and faces are identified.
+		With these now identified, we use the <code>setNeighbors(...)</code> function to re-assign the pointers in order to flip the edge. All other pointers are 
+		individually updated as well to ensure that flipped edges can be flipped back. 
+
+		<br><br> 
+
+		One trick I used for this and Part 5 was to first sketch out and label each vertex and edge, and then in code maintain these labels throughout the code in comments
+		to ensure all features were correctly edited. This made it simple to debug any missing faces as I knew exactly which item was incorrect. 
 
 		<div style="display: flex; flex-direction: column; align-items: center;">
 			<table style="width: 100%; text-align: center; border-collapse: collapse;">
 			  <tr>
 				<td style="text-align: center;">
 				  <img src="assets/teapot_no_flip.png" width="100%" style="border: 2px solid black;"/>
-				  <figcaption>TODO</figcaption>
+				  <figcaption>Default Teapot</figcaption>
 				</td>
 				<td style="text-align: center;">
 				  <img src="assets/teapot_flipped_edges.png" width="100%" style="border: 2px solid black;"/>
-				  <figcaption>TODO</figcaption>
+				  <figcaption>Flipped Edges</figcaption>
 				</td>
 			  </tr>
 			</table>
 		</div>	
 
 		<h3>Part 5: Edge split</h3>
-		TODO: Briefly explain how you implemented the edge split operation and describe any interesting implementation / debugging tricks you have used. Write about your eventful debugging journey, if you have experienced one.
+
+		The implementation for this part is contained within the <code>VertexIter HalfedgeMesh::splitEdge(EdgeIter e0)</code> function. Similar to the edge flip code,
+		the boundary conditions are checked first, and then the vertices, edges, and faces are all identified. Next, the new vertex is created at the midpoint of the 
+		split edge, and the necessary half edges are created as well. Finally, all the edges are reassigned using the <code>setNeighbors(...)</code> function, and other
+		pointers are individually updated to ensure no faces end up disappearing. 
 
 
 		<div style="display: flex; flex-direction: column; align-items: center;">
@@ -143,26 +191,83 @@
 			  <tr>
 				<td style="text-align: center;">
 				  <img src="assets/teapot_no_flip.png" width="100%" style="border: 2px solid black;"/>
-				  <figcaption>TODO</figcaption>
+				  <figcaption>Default Teapot</figcaption>
 				</td>
 				<td style="text-align: center;">
-				  <img src="assets/" width="100%" style="border: 2px solid black;"/>
-				  <figcaption>TODO: splits</figcaption>
+				  <img src="assets/teapot_split.png" width="100%" style="border: 2px solid black;"/>
+				  <figcaption>Split Edges</figcaption>
 				</td>
 				<td style="text-align: center;">
-				  <img src="assets/" width="100%" style="border: 2px solid black;"/>
-				  <figcaption>TODO: splits and flips</figcaption>
+				  <img src="assets/teapot_flip_split.png" width="100%" style="border: 2px solid black;"/>
+				  <figcaption>Flipped and Split Edges</figcaption>
 				</td>
 			  </tr>
 			</table>
 		</div>	
 
 		<h3>Part 6: Loop subdivision for mesh upsampling</h3>
-		TODO: Briefly explain how you implemented the loop subdivision and describe any interesting implementation / debugging tricks you have used. Take some notes, as well as some screenshots, of your observations on how meshes behave after loop subdivision. What happens to sharp corners and edges? Can you reduce this effect by pre-splitting some edges? Load dae/cube.dae. Perform several iterations of loop subdivision on the cube. Notice that the cube becomes slightly asymmetric after repeated subdivisions. Can you pre-process the cube with edge flips and splits so that the cube subdivides symmetrically? Document these effects and explain why they occur. Also explain how your pre-processing helps alleviate the effects.
+		The first step was to iterate through all vertices, compute their degree \( n \) and neighbor position sum, and use these to apply the 
+		loop subdivision weighting formula. These target coordinates are stored in the <code>newPosition</code> Vertex variable. Next, the midpoint for future
+		vertices is calculating using the formula \[ \frac{3}{8} * (A + B) +  \frac{1}{8} * (C + D) \]. Now, iterating through just the original edges, each is split
+		using the <code>splitEdges(...)</code> function. With these new edges, we iterate through them all and flip any newly created edges between an old and new vertex. Finally, all computed <code>newPosition</code>
+		values for the vertices are transferred into the <code>Vertex::position</code> field, and the <code>isNew</code>> flag is reset to False.
 
 		<br><br>
-		
-		TODO: Add images
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="assets/torus0.png" width="100%" style="border: 2px solid black;"/>
+				  <figcaption>Torus (Subdivide = 0)</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="assets/torus1.png" width="100%" style="border: 2px solid black;"/>
+				  <figcaption>Torus (Subdivide = 1)</figcaption>
+				</td>
+				</tr>
+				<tr>
+				<td style="text-align: center;">
+				  <img src="assets/torus4.png" width="100%" style="border: 2px solid black;"/>
+				  <figcaption>Torus (Subdivide = 4)</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="assets/torus8.png" width="100%" style="border: 2px solid black;"/>
+				  <figcaption>Torus (Subdivide = 8)</figcaption>
+				</td>
+			  </tr>
+			</table>
+
+			<br><br>
+
+			We can see in the torus and cube that sharp edges become smother, but this ultimately reduces the object volume. Another effect that is obvious in the 
+			cube is how edges seem to get twisted. This can be resolved by increasing the number of edges, or the mesh density, along these edges, to reduce the smoothing effect
+			subdividing has.
+
+			<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="assets/cube0.png" width="100%" style="border: 2px solid black;"/>
+				  <figcaption>Torus (Subdivide = 0)</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="assets/cube1.png" width="100%" style="border: 2px solid black;"/>
+				  <figcaption>Torus (Subdivide = 1)</figcaption>
+				</td>
+				</tr>
+				<tr>
+				<td style="text-align: center;">
+				  <img src="assets/cube2.png" width="100%" style="border: 2px solid black;"/>
+				  <figcaption>Torus (Subdivide = 4)</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="assets/cube4.png" width="100%" style="border: 2px solid black;"/>
+				  <figcaption>Torus (Subdivide = 8)</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>	
 
 	</div>
 	</body>
